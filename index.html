@@ -6,37 +6,12 @@
         <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
         <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-capable" content="yes">
-        <link rel="stylesheet" href="./resources/ol.css">
-        <link rel="stylesheet" href="resources/fontawesome-all.min.css">
-        <link rel="stylesheet" type="text/css" href="resources/horsey.min.css">
-        <link rel="stylesheet" type="text/css" href="resources/ol-search-layer.min.css">
-        <link href="resources/photon-geocoder-autocomplete.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="./resources/ol-layerswitcher.css">
-        <link rel="stylesheet" href="./resources/qgis2web.css">
-        <style>
-        html, body {
-            background-color: #ffffff;
-        }
-        .ol-control > * {
-            background-color: #b2df8a!important;
-            color: #444444!important;
-            border-radius: 0px;
-        }
-        .ol-attribution a, .gcd-gl-input::placeholder, .search-layer-input-search::placeholder {
-            color: #444444!important;
-        }
-        .search-layer-input-search {
-            background-color: #b2df8a!important;
-        }
-        .ol-control > *:focus, .ol-control >*:hover {
-            background-color: rgba(178, 223, 138, 0.7)!important;
-        } 
-        .ol-control {
-            background-color: rgba(255,255,255,.4) !important;
-            padding: 2px !important;
-        } 
-        </style>
-
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet.photon.css">
+        <link rel="stylesheet" href="css/leaflet-measure.css">
         <style>
         html, body, #map {
             width: 100%;
@@ -49,22 +24,2572 @@
     </head>
     <body>
         <div id="map">
-            <div id="popup" class="ol-popup">
-                <a href="#" id="popup-closer" class="ol-popup-closer"></a>
-                <div id="popup-content"></div>
-            </div>
         </div>
-        <script src="resources/qgis2web_expressions.js"></script>
-        <script src="./resources/functions.js"></script>
-        <script src="./resources/ol.js"></script>
-        <script src="resources/horsey.min.js"></script>
-        <script src="resources/ol-search-layer.js"></script>
-        <script src="./resources/ol-layerswitcher.js"></script>
-        <script src="resources/photon-geocoder-autocomplete.min.js"></script>
-        <script src="layers/Grid_5X5Km_0.js"></script><script src="layers/STR_1.js"></script><script src="layers/LineTransect_2.js"></script><script src="layers/SignSurvey_3.js"></script><script src="layers/lineTransect_observation_4.js"></script><script src="layers/MajorMammalDistributionPhaseIIIIV_Demo_5.js"></script><script src="layers/SignSurvey_Observation_6.js"></script>
-        <script src="styles/Grid_5X5Km_0_style.js"></script><script src="styles/STR_1_style.js"></script><script src="styles/LineTransect_2_style.js"></script><script src="styles/SignSurvey_3_style.js"></script><script src="styles/lineTransect_observation_4_style.js"></script><script src="styles/MajorMammalDistributionPhaseIIIIV_Demo_5_style.js"></script><script src="styles/SignSurvey_Observation_6_style.js"></script>
-        <script src="./layers/layers.js" type="text/javascript"></script> 
-        <script src="./resources/Autolinker.min.js"></script>
-        <script src="./resources/qgis2web.js"></script>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet.photon.js"></script>
+        <script src="js/leaflet-measure.js"></script>
+        <script src="data/STR_0.js"></script>
+        <script src="data/Beat_STR_Core_Buffer_1.js"></script>
+        <script src="data/All_Village_Beat_2.js"></script>
+        <script src="data/CT_STR_Beat_3.js"></script>
+        <script src="data/LineTransect_Beat_4.js"></script>
+        <script src="data/MajorMammalDistributionPhaseIIIIV_Demo_5.js"></script>
+        <script src="data/SingSurvey_Beat_6.js"></script>
+        <script src="data/Temple_Beat_7.js"></script>
+        <script src="data/Waterholes_Sariska_Beat_8.js"></script>
+        <script>
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+
+            if (e.target.feature.geometry.type === 'LineString' || e.target.feature.geometry.type === 'MultiLineString') {
+              highlightLayer.setStyle({
+                color: '#ffff00',
+              });
+            } else {
+              highlightLayer.setStyle({
+                fillColor: '#ffff00',
+                fillOpacity: 1
+              });
+            }
+            highlightLayer.openPopup();
+        }
+        var map = L.map('map', {
+            zoomControl:false, maxZoom:28, minZoom:1
+        }).fitBounds([[26.83921876337093,75.32850963701406],[28.01841797313876,77.51997322866092]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        // remove popup's row if "visible-with-data"
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        // add class to format popup if it contains media
+		function addClassToPopupIfMedia(content, popup) {
+			var tempDiv = document.createElement('div');
+			tempDiv.innerHTML = content;
+			if (tempDiv.querySelector('td img')) {
+				popup._contentNode.classList.add('media');
+					// Delay to force the redraw
+					setTimeout(function() {
+						popup.update();
+					}, 10);
+			} else {
+				popup._contentNode.classList.remove('media');
+			}
+		}
+        var zoomControl = L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
+        var measureControl = new L.Control.Measure({
+            position: 'topleft',
+            primaryLengthUnit: 'meters',
+            secondaryLengthUnit: 'kilometers',
+            primaryAreaUnit: 'sqmeters',
+            secondaryAreaUnit: 'hectares'
+        });
+        measureControl.addTo(map);
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0].innerHTML = '';
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0].className += ' fas fa-ruler';
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        function pop_STR_0(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Name'] !== null ? autolinker.link(String(feature.properties['Name']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Area_Sq_Km'] !== null ? autolinker.link(String(feature.properties['Area_Sq_Km']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_STR_0_0(feature) {
+            switch(String(feature.properties['Name'])) {
+                case 'STR CTH':
+                    return {
+                pane: 'pane_STR_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(223,29,123,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'STR_Buffer':
+                    return {
+                pane: 'pane_STR_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(132,240,38,1.0)',
+                interactive: true,
+            }
+                    break;
+                default:
+                    return {
+                pane: 'pane_STR_0',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(94,152,219,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_STR_0');
+        map.getPane('pane_STR_0').style.zIndex = 400;
+        map.getPane('pane_STR_0').style['mix-blend-mode'] = 'normal';
+        var layer_STR_0 = new L.geoJson(json_STR_0, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_STR_0',
+            layerName: 'layer_STR_0',
+            pane: 'pane_STR_0',
+            onEachFeature: pop_STR_0,
+            style: style_STR_0_0,
+        });
+        bounds_group.addLayer(layer_STR_0);
+        map.addLayer(layer_STR_0);
+        function pop_Beat_STR_Core_Buffer_1(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['FID_STR'] !== null ? autolinker.link(String(feature.properties['FID_STR']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Name'] !== null ? autolinker.link(String(feature.properties['Name']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Area_Sq_Km'] !== null ? autolinker.link(String(feature.properties['Area_Sq_Km']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['FID_Beat_S'] !== null ? autolinker.link(String(feature.properties['FID_Beat_S']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Id'] !== null ? autolinker.link(String(feature.properties['Id']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['BEAT'] !== null ? autolinker.link(String(feature.properties['BEAT']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['RANGE'] !== null ? autolinker.link(String(feature.properties['RANGE']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Naka'] !== null ? autolinker.link(String(feature.properties['Naka']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['MIN'] !== null ? autolinker.link(String(feature.properties['MIN']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['MAX'] !== null ? autolinker.link(String(feature.properties['MAX']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Area_SqKm'] !== null ? autolinker.link(String(feature.properties['Area_SqKm']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_Beat_STR_Core_Buffer_1_0(feature) {
+            switch(String(feature.properties['BEAT'])) {
+                case 'AJABGARH':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(212,121,102,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'ANDHERI':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(223,169,111,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'BALAKILA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(48,222,144,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'BALDEOGARH':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(74,81,215,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'BALETA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(200,89,56,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'BANDIPOOL':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(209,15,196,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'BANDIPUL':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(230,137,132,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'BANNA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(82,211,70,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'BANSI':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(201,91,155,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'BARALIWARI':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(187,85,207,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'BATALA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(139,208,95,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'BHAGANI':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(132,233,135,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'BHAKHTPURA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(119,99,208,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'BHANGARH':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(234,115,99,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'BHARTAHARI':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(239,229,82,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'BHURASID':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(190,210,13,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'BINAK':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(61,116,219,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'BIRPUR':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(228,25,177,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'BORETA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(206,44,73,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'CHANPAHADI':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(74,218,113,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'CHOTICHIND':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(231,83,128,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'DABKAN':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(87,145,232,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'DABLI':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(121,208,34,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'DADIKAR':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(227,85,102,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'DALAWAS':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(236,198,30,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'DANGARWARA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(210,133,65,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'DEORI':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(175,110,203,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'DHAMLA KA BAS':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(65,194,226,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'DHARAMPURA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(193,71,206,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'DHAWALA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(102,216,152,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'DIGOTA-I':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(121,208,205,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'DIGOTA-II':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(15,238,205,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'DIGOTA-III':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(227,188,71,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'DOBARINGAS PURI':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(174,128,227,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'DUHARMALA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(215,82,30,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'FATYAKHORA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(215,137,29,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'GANESHPURA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(28,222,203,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'GANGORI':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(32,187,211,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'GARH':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(42,81,208,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'GHANKA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(86,235,143,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'GHATARA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(116,202,169,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'GHEWAR':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(210,56,164,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'GORDANPURA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(37,207,210,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'HAJIPUR':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(121,24,207,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'HAMIRPUR':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(114,160,213,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'HARIPURA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(85,35,201,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'INDOK':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(170,76,220,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'JAHAJ':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(79,35,223,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'JATUWANA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(207,116,159,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'KALACHARA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(110,223,167,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'KALIGHATI':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(23,56,221,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'KALIKHOL':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(128,122,216,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'KANKWARI':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(210,154,56,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'KARNAKAWAS':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(102,117,236,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'KHARKADI':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(183,61,217,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'KHARRIKA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(236,142,164,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'KHO':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(203,95,133,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'KIRASKA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(209,231,101,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'KISHORI':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(42,161,212,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'KUNDALA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(223,74,221,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'KUSHALGARH':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(219,29,153,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'LEKDI':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(82,204,92,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'LOJKANPURA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(237,126,172,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'MADHOGARH':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(64,233,177,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'MANABAS':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(216,39,184,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'MENDKI':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(216,69,224,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'NALDESHWAR':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(102,37,224,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'NANDOLI':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(158,210,53,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'NANDU':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(97,204,15,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'NANGALEDI':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(87,203,33,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'NARAYANIMATA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(169,107,213,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'NATHUSAR':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(87,234,33,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'NETALA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(202,104,156,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'NIDANI':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(136,239,212,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'PANDUPOL':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(47,147,205,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'PANIDAL':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(104,203,182,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'PENTPUR':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(54,198,211,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'PRADHANA KA GUWARA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(186,210,121,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'PRATAP BAND':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(110,228,134,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'PRITHVIPURA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(139,128,218,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'RAIKA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(203,21,21,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'RAJOR':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(39,226,33,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'RAMPUR- I':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(239,236,48,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'RAMPUR- II':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(167,211,97,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'RAMPUR- III':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(227,234,104,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'RAYAWALA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(43,183,230,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'REKAMALA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(124,124,221,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'RICHUNDA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(230,214,111,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'ROTKYALA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(236,135,142,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'SADAR':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(149,108,207,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'SAMRA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(105,140,227,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'SHYANKOTRA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(67,233,26,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'SILIBAWARI':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(174,210,43,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'SIRAWAS':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(51,221,105,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'SLOPKA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(228,170,131,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'SUKOLA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(210,164,58,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'TALAB':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(21,148,238,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'TALVRIKSH':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(119,181,238,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'TARUNDA':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(132,229,115,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'TILWARI':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(228,29,201,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'UMRAN':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(140,212,52,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'UMRI':
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(132,238,148,1.0)',
+                interactive: true,
+            }
+                    break;
+                default:
+                    return {
+                pane: 'pane_Beat_STR_Core_Buffer_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(219,97,31,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_Beat_STR_Core_Buffer_1');
+        map.getPane('pane_Beat_STR_Core_Buffer_1').style.zIndex = 401;
+        map.getPane('pane_Beat_STR_Core_Buffer_1').style['mix-blend-mode'] = 'normal';
+        var layer_Beat_STR_Core_Buffer_1 = new L.geoJson(json_Beat_STR_Core_Buffer_1, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Beat_STR_Core_Buffer_1',
+            layerName: 'layer_Beat_STR_Core_Buffer_1',
+            pane: 'pane_Beat_STR_Core_Buffer_1',
+            onEachFeature: pop_Beat_STR_Core_Buffer_1,
+            style: style_Beat_STR_Core_Buffer_1_0,
+        });
+        bounds_group.addLayer(layer_Beat_STR_Core_Buffer_1);
+        map.addLayer(layer_Beat_STR_Core_Buffer_1);
+        function pop_All_Village_Beat_2(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Id'] !== null ? autolinker.link(String(feature.properties['Id']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Name'] !== null ? autolinker.link(String(feature.properties['Name']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['FID_Beat_S'] !== null ? autolinker.link(String(feature.properties['FID_Beat_S']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['FID_STR'] !== null ? autolinker.link(String(feature.properties['FID_STR']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Name_1'] !== null ? autolinker.link(String(feature.properties['Name_1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['BEAT'] !== null ? autolinker.link(String(feature.properties['BEAT']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['RANGE_1'] !== null ? autolinker.link(String(feature.properties['RANGE_1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Naka'] !== null ? autolinker.link(String(feature.properties['Naka']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Letitude'] !== null ? autolinker.link(String(feature.properties['Letitude']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Longitude'] !== null ? autolinker.link(String(feature.properties['Longitude']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_All_Village_Beat_2_0() {
+            return {
+                pane: 'pane_All_Village_Beat_2',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(183,72,75,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_All_Village_Beat_2');
+        map.getPane('pane_All_Village_Beat_2').style.zIndex = 402;
+        map.getPane('pane_All_Village_Beat_2').style['mix-blend-mode'] = 'normal';
+        var layer_All_Village_Beat_2 = new L.geoJson(json_All_Village_Beat_2, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_All_Village_Beat_2',
+            layerName: 'layer_All_Village_Beat_2',
+            pane: 'pane_All_Village_Beat_2',
+            onEachFeature: pop_All_Village_Beat_2,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_All_Village_Beat_2_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_All_Village_Beat_2);
+        map.addLayer(layer_All_Village_Beat_2);
+        function pop_CT_STR_Beat_3(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Site'] !== null ? autolinker.link(String(feature.properties['Site']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Row_Labels'] !== null ? autolinker.link(String(feature.properties['Row_Labels']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Longitude'] !== null ? autolinker.link(String(feature.properties['Longitude']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Latitude'] !== null ? autolinker.link(String(feature.properties['Latitude']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Species_Na'] !== null ? autolinker.link(String(feature.properties['Species_Na']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Grid'] !== null ? autolinker.link(String(feature.properties['Grid']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['PageNumber'] !== null ? autolinker.link(String(feature.properties['PageNumber']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Name'] !== null ? autolinker.link(String(feature.properties['Name']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['BEAT'] !== null ? autolinker.link(String(feature.properties['BEAT']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['RANGE'] !== null ? autolinker.link(String(feature.properties['RANGE']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Naka'] !== null ? autolinker.link(String(feature.properties['Naka']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_CT_STR_Beat_3_0() {
+            return {
+                pane: 'pane_CT_STR_Beat_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(229,182,54,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_CT_STR_Beat_3');
+        map.getPane('pane_CT_STR_Beat_3').style.zIndex = 403;
+        map.getPane('pane_CT_STR_Beat_3').style['mix-blend-mode'] = 'normal';
+        var layer_CT_STR_Beat_3 = new L.geoJson(json_CT_STR_Beat_3, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_CT_STR_Beat_3',
+            layerName: 'layer_CT_STR_Beat_3',
+            pane: 'pane_CT_STR_Beat_3',
+            onEachFeature: pop_CT_STR_Beat_3,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_CT_STR_Beat_3_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_CT_STR_Beat_3);
+        map.addLayer(layer_CT_STR_Beat_3);
+        function pop_LineTransect_Beat_4(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['TR'] !== null ? autolinker.link(String(feature.properties['TR']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Transect'] !== null ? autolinker.link(String(feature.properties['Transect']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Replicate'] !== null ? autolinker.link(String(feature.properties['Replicate']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['PDate'] !== null ? autolinker.link(String(feature.properties['PDate']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['PTime'] !== null ? autolinker.link(String(feature.properties['PTime']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Animal'] !== null ? autolinker.link(String(feature.properties['Animal']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['AY'] !== null ? autolinker.link(String(feature.properties['AY']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Y'] !== null ? autolinker.link(String(feature.properties['Y']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['A'] !== null ? autolinker.link(String(feature.properties['A']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Longitude'] !== null ? autolinker.link(String(feature.properties['Longitude']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Latitude'] !== null ? autolinker.link(String(feature.properties['Latitude']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['A_Bearing'] !== null ? autolinker.link(String(feature.properties['A_Bearing']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['WalkBear'] !== null ? autolinker.link(String(feature.properties['WalkBear']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Ang_Dist'] !== null ? autolinker.link(String(feature.properties['Ang_Dist']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['cot'] !== null ? autolinker.link(String(feature.properties['cot']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Name'] !== null ? autolinker.link(String(feature.properties['Name']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['BEAT'] !== null ? autolinker.link(String(feature.properties['BEAT']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['RANGE'] !== null ? autolinker.link(String(feature.properties['RANGE']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Naka'] !== null ? autolinker.link(String(feature.properties['Naka']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Photo'] !== null ? autolinker.link(String(feature.properties['Photo']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_LineTransect_Beat_4_0() {
+            return {
+                pane: 'pane_LineTransect_Beat_4',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(190,178,151,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_LineTransect_Beat_4');
+        map.getPane('pane_LineTransect_Beat_4').style.zIndex = 404;
+        map.getPane('pane_LineTransect_Beat_4').style['mix-blend-mode'] = 'normal';
+        var layer_LineTransect_Beat_4 = new L.geoJson(json_LineTransect_Beat_4, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_LineTransect_Beat_4',
+            layerName: 'layer_LineTransect_Beat_4',
+            pane: 'pane_LineTransect_Beat_4',
+            onEachFeature: pop_LineTransect_Beat_4,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_LineTransect_Beat_4_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_LineTransect_Beat_4);
+        map.addLayer(layer_LineTransect_Beat_4);
+        function pop_MajorMammalDistributionPhaseIIIIV_Demo_5(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Site'] !== null ? autolinker.link(String(feature.properties['Site']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Row_Labels'] !== null ? autolinker.link(String(feature.properties['Row_Labels']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Longitude'] !== null ? autolinker.link(String(feature.properties['Longitude']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Latitude'] !== null ? autolinker.link(String(feature.properties['Latitude']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Species_Na'] !== null ? autolinker.link(String(feature.properties['Species_Na']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_MajorMammalDistributionPhaseIIIIV_Demo_5_0() {
+            return {
+                pane: 'pane_MajorMammalDistributionPhaseIIIIV_Demo_5',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(125,139,143,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_MajorMammalDistributionPhaseIIIIV_Demo_5');
+        map.getPane('pane_MajorMammalDistributionPhaseIIIIV_Demo_5').style.zIndex = 405;
+        map.getPane('pane_MajorMammalDistributionPhaseIIIIV_Demo_5').style['mix-blend-mode'] = 'normal';
+        var layer_MajorMammalDistributionPhaseIIIIV_Demo_5 = new L.geoJson(json_MajorMammalDistributionPhaseIIIIV_Demo_5, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_MajorMammalDistributionPhaseIIIIV_Demo_5',
+            layerName: 'layer_MajorMammalDistributionPhaseIIIIV_Demo_5',
+            pane: 'pane_MajorMammalDistributionPhaseIIIIV_Demo_5',
+            onEachFeature: pop_MajorMammalDistributionPhaseIIIIV_Demo_5,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_MajorMammalDistributionPhaseIIIIV_Demo_5_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_MajorMammalDistributionPhaseIIIIV_Demo_5);
+        map.addLayer(layer_MajorMammalDistributionPhaseIIIIV_Demo_5);
+        function pop_SingSurvey_Beat_6(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td class="visible-with-data" id="Trail" colspan="2"><strong>Trail</strong><br />' + (feature.properties['Trail'] !== null ? autolinker.link(String(feature.properties['Trail']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="TDate" colspan="2"><strong>TDate</strong><br />' + (feature.properties['TDate'] !== null ? autolinker.link(String(feature.properties['TDate']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="TTime" colspan="2"><strong>TTime</strong><br />' + (feature.properties['TTime'] !== null ? autolinker.link(String(feature.properties['TTime']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="SPP_Type" colspan="2"><strong>SPP_Type</strong><br />' + (feature.properties['SPP_Type'] !== null ? autolinker.link(String(feature.properties['SPP_Type']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="Carnivore" colspan="2"><strong>Carnivore</strong><br />' + (feature.properties['Carnivore'] !== null ? autolinker.link(String(feature.properties['Carnivore']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="Carn_Sn" colspan="2"><strong>Carn_Sn</strong><br />' + (feature.properties['Carn_Sn'] !== null ? autolinker.link(String(feature.properties['Carn_Sn']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="Sign" colspan="2"><strong>Sign</strong><br />' + (feature.properties['Sign'] !== null ? autolinker.link(String(feature.properties['Sign']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="TrackAge" colspan="2"><strong>TrackAge</strong><br />' + (feature.properties['TrackAge'] !== null ? autolinker.link(String(feature.properties['TrackAge']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="Longitude" colspan="2"><strong>Longitude</strong><br />' + (feature.properties['Longitude'] !== null ? autolinker.link(String(feature.properties['Longitude']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="Latitude" colspan="2"><strong>Latitude</strong><br />' + (feature.properties['Latitude'] !== null ? autolinker.link(String(feature.properties['Latitude']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="No_Indi" colspan="2"><strong>No_Indi</strong><br />' + (feature.properties['No_Indi'] !== null ? autolinker.link(String(feature.properties['No_Indi']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="Male" colspan="2"><strong>Male</strong><br />' + (feature.properties['Male'] !== null ? autolinker.link(String(feature.properties['Male']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="Female" colspan="2"><strong>Female</strong><br />' + (feature.properties['Female'] !== null ? autolinker.link(String(feature.properties['Female']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="Young" colspan="2"><strong>Young</strong><br />' + (feature.properties['Young'] !== null ? autolinker.link(String(feature.properties['Young']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="Unknown" colspan="2"><strong>Unknown</strong><br />' + (feature.properties['Unknown'] !== null ? autolinker.link(String(feature.properties['Unknown']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="Name" colspan="2"><strong>Name</strong><br />' + (feature.properties['Name'] !== null ? autolinker.link(String(feature.properties['Name']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="BEAT" colspan="2"><strong>BEAT</strong><br />' + (feature.properties['BEAT'] !== null ? autolinker.link(String(feature.properties['BEAT']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="RANGE" colspan="2"><strong>RANGE</strong><br />' + (feature.properties['RANGE'] !== null ? autolinker.link(String(feature.properties['RANGE']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="Naka" colspan="2"><strong>Naka</strong><br />' + (feature.properties['Naka'] !== null ? autolinker.link(String(feature.properties['Naka']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="Photo" colspan="2"><strong>Photo</strong><br />' + (feature.properties['Photo'] !== null ? autolinker.link(String(feature.properties['Photo']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_SingSurvey_Beat_6_0() {
+            return {
+                pane: 'pane_SingSurvey_Beat_6',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(164,113,88,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_SingSurvey_Beat_6');
+        map.getPane('pane_SingSurvey_Beat_6').style.zIndex = 406;
+        map.getPane('pane_SingSurvey_Beat_6').style['mix-blend-mode'] = 'normal';
+        var layer_SingSurvey_Beat_6 = new L.geoJson(json_SingSurvey_Beat_6, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_SingSurvey_Beat_6',
+            layerName: 'layer_SingSurvey_Beat_6',
+            pane: 'pane_SingSurvey_Beat_6',
+            onEachFeature: pop_SingSurvey_Beat_6,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_SingSurvey_Beat_6_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_SingSurvey_Beat_6);
+        map.addLayer(layer_SingSurvey_Beat_6);
+        function pop_Temple_Beat_7(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Name'] !== null ? autolinker.link(String(feature.properties['Name']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Name_1'] !== null ? autolinker.link(String(feature.properties['Name_1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['BEAT_1'] !== null ? autolinker.link(String(feature.properties['BEAT_1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['RANGE_1'] !== null ? autolinker.link(String(feature.properties['RANGE_1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Naka'] !== null ? autolinker.link(String(feature.properties['Naka']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Longitude'] !== null ? autolinker.link(String(feature.properties['Longitude']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Letitude'] !== null ? autolinker.link(String(feature.properties['Letitude']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_Temple_Beat_7_0() {
+            return {
+                pane: 'pane_Temple_Beat_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(243,166,178,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_Temple_Beat_7');
+        map.getPane('pane_Temple_Beat_7').style.zIndex = 407;
+        map.getPane('pane_Temple_Beat_7').style['mix-blend-mode'] = 'normal';
+        var layer_Temple_Beat_7 = new L.geoJson(json_Temple_Beat_7, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Temple_Beat_7',
+            layerName: 'layer_Temple_Beat_7',
+            pane: 'pane_Temple_Beat_7',
+            onEachFeature: pop_Temple_Beat_7,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_Temple_Beat_7_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_Temple_Beat_7);
+        map.addLayer(layer_Temple_Beat_7);
+        function pop_Waterholes_Sariska_Beat_8(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Name_of_Wa'] !== null ? autolinker.link(String(feature.properties['Name_of_Wa']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Type'] !== null ? autolinker.link(String(feature.properties['Type']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['X'] !== null ? autolinker.link(String(feature.properties['X']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Y'] !== null ? autolinker.link(String(feature.properties['Y']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Name'] !== null ? autolinker.link(String(feature.properties['Name']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['BEAT_1'] !== null ? autolinker.link(String(feature.properties['BEAT_1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['RANGE_1'] !== null ? autolinker.link(String(feature.properties['RANGE_1']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Naka'] !== null ? autolinker.link(String(feature.properties['Naka']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_Waterholes_Sariska_Beat_8_0() {
+            return {
+                pane: 'pane_Waterholes_Sariska_Beat_8',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(232,113,141,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_Waterholes_Sariska_Beat_8');
+        map.getPane('pane_Waterholes_Sariska_Beat_8').style.zIndex = 408;
+        map.getPane('pane_Waterholes_Sariska_Beat_8').style['mix-blend-mode'] = 'normal';
+        var layer_Waterholes_Sariska_Beat_8 = new L.geoJson(json_Waterholes_Sariska_Beat_8, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Waterholes_Sariska_Beat_8',
+            layerName: 'layer_Waterholes_Sariska_Beat_8',
+            pane: 'pane_Waterholes_Sariska_Beat_8',
+            onEachFeature: pop_Waterholes_Sariska_Beat_8,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_Waterholes_Sariska_Beat_8_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_Waterholes_Sariska_Beat_8);
+        map.addLayer(layer_Waterholes_Sariska_Beat_8);
+        const url = {"Nominatim OSM": "https://nominatim.openstreetmap.org/search?format=geojson&addressdetails=1&",
+        "France BAN": "https://api-adresse.data.gouv.fr/search/?"}
+        var photonControl = L.control.photon({
+            url: url["Nominatim OSM"],
+            feedbackLabel: '',
+            position: 'topleft',
+            includePosition: true,
+            initial: true,
+            // resultsHandler: myHandler,
+        }).addTo(map);
+        photonControl._container.childNodes[0].style.borderRadius="10px"
+        // Create a variable to store the geoJSON data
+        var x = null;
+        // Create a variable to store the marker
+        var marker = null;
+        // Add an event listener to the Photon control to create a marker from the returned geoJSON data
+        var z = null;
+        photonControl.on('selected', function(e) {
+            console.log(photonControl.search.resultsContainer);
+            if (x != null) {
+                map.removeLayer(obj3.marker);
+                map.removeLayer(x);
+            }
+            obj2.gcd = e.choice;
+            x = L.geoJSON(obj2.gcd).addTo(map);
+            var label = typeof obj2.gcd.properties.label === 'undefined' ? obj2.gcd.properties.display_name : obj2.gcd.properties.label;
+            obj3.marker = L.marker(x.getLayers()[0].getLatLng()).bindPopup(label).addTo(map);
+            map.setView(x.getLayers()[0].getLatLng(), 17);
+            z = typeof e.choice.properties.label === 'undefined'? e.choice.properties.display_name : e.choice.properties.label;
+            console.log(e);
+            e.target.input.value = z;
+        });
+        var search = document.getElementsByClassName("leaflet-photon leaflet-control")[0];
+        search.classList.add("leaflet-control-search")
+        search.style.display = "flex";
+        search.style.backgroundColor="rgba(255,255,255,0.5)" 
+
+        // Create the new button element
+        var button = document.createElement("div");
+        button.id = "gcd-button-control";
+        button.className = "gcd-gl-btn fa fa-search search-button";
+
+        // Insert the button at the beginning of the search control
+        search.insertBefore(button, search.firstChild);
+        last = search.lastChild;
+        last.style.display = "none";
+        button.addEventListener("click", function (e) {
+            if (last.style.display === "none") {
+                last.style.display = "block";
+            } else {
+                last.style.display = "none";
+            }
+        });
+        var overlaysTree = [
+            {label: '<img src="legend/Waterholes_Sariska_Beat_8.png" /> Waterholes_Sariska_Beat', layer: layer_Waterholes_Sariska_Beat_8},
+            {label: '<img src="legend/Temple_Beat_7.png" /> Temple_Beat', layer: layer_Temple_Beat_7},
+            {label: '<img src="legend/SingSurvey_Beat_6.png" /> SingSurvey_Beat', layer: layer_SingSurvey_Beat_6},
+            {label: '<img src="legend/MajorMammalDistributionPhaseIIIIV_Demo_5.png" /> Major Mammal Distribution Phase III IV_Demo', layer: layer_MajorMammalDistributionPhaseIIIIV_Demo_5},
+            {label: '<img src="legend/LineTransect_Beat_4.png" /> LineTransect_Beat', layer: layer_LineTransect_Beat_4},
+            {label: '<img src="legend/CT_STR_Beat_3.png" /> CT_STR_Beat', layer: layer_CT_STR_Beat_3},
+            {label: '<img src="legend/All_Village_Beat_2.png" /> All_Village_Beat', layer: layer_All_Village_Beat_2},
+            {label: 'Beat_STR_Core_Buffer<br /><table><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_AJABGARH0.png" /></td><td>AJABGARH</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_ANDHERI1.png" /></td><td>ANDHERI</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_BALAKILA2.png" /></td><td>BALAKILA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_BALDEOGARH3.png" /></td><td>BALDEOGARH</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_BALETA4.png" /></td><td>BALETA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_BANDIPOOL5.png" /></td><td>BANDIPOOL</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_BANDIPUL6.png" /></td><td>BANDIPUL</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_BANNA7.png" /></td><td>BANNA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_BANSI8.png" /></td><td>BANSI</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_BARALIWARI9.png" /></td><td>BARALIWARI</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_BATALA10.png" /></td><td>BATALA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_BHAGANI11.png" /></td><td>BHAGANI</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_BHAKHTPURA12.png" /></td><td>BHAKHTPURA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_BHANGARH13.png" /></td><td>BHANGARH</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_BHARTAHARI14.png" /></td><td>BHARTAHARI</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_BHURASID15.png" /></td><td>BHURASID</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_BINAK16.png" /></td><td>BINAK</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_BIRPUR17.png" /></td><td>BIRPUR</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_BORETA18.png" /></td><td>BORETA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_CHANPAHADI19.png" /></td><td>CHANPAHADI</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_CHOTICHIND20.png" /></td><td>CHOTICHIND</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_DABKAN21.png" /></td><td>DABKAN</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_DABLI22.png" /></td><td>DABLI</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_DADIKAR23.png" /></td><td>DADIKAR</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_DALAWAS24.png" /></td><td>DALAWAS</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_DANGARWARA25.png" /></td><td>DANGARWARA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_DEORI26.png" /></td><td>DEORI</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_DHAMLAKABAS27.png" /></td><td>DHAMLA KA BAS</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_DHARAMPURA28.png" /></td><td>DHARAMPURA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_DHAWALA29.png" /></td><td>DHAWALA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_DIGOTAI30.png" /></td><td>DIGOTA-I</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_DIGOTAII31.png" /></td><td>DIGOTA-II</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_DIGOTAIII32.png" /></td><td>DIGOTA-III</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_DOBARINGASPURI33.png" /></td><td>DOBARINGAS PURI</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_DUHARMALA34.png" /></td><td>DUHARMALA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_FATYAKHORA35.png" /></td><td>FATYAKHORA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_GANESHPURA36.png" /></td><td>GANESHPURA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_GANGORI37.png" /></td><td>GANGORI</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_GARH38.png" /></td><td>GARH</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_GHANKA39.png" /></td><td>GHANKA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_GHATARA40.png" /></td><td>GHATARA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_GHEWAR41.png" /></td><td>GHEWAR</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_GORDANPURA42.png" /></td><td>GORDANPURA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_HAJIPUR43.png" /></td><td>HAJIPUR</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_HAMIRPUR44.png" /></td><td>HAMIRPUR</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_HARIPURA45.png" /></td><td>HARIPURA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_INDOK46.png" /></td><td>INDOK</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_JAHAJ47.png" /></td><td>JAHAJ</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_JATUWANA48.png" /></td><td>JATUWANA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_KALACHARA49.png" /></td><td>KALACHARA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_KALIGHATI50.png" /></td><td>KALIGHATI</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_KALIKHOL51.png" /></td><td>KALIKHOL</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_KANKWARI52.png" /></td><td>KANKWARI</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_KARNAKAWAS53.png" /></td><td>KARNAKAWAS</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_KHARKADI54.png" /></td><td>KHARKADI</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_KHARRIKA55.png" /></td><td>KHARRIKA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_KHO56.png" /></td><td>KHO</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_KIRASKA57.png" /></td><td>KIRASKA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_KISHORI58.png" /></td><td>KISHORI</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_KUNDALA59.png" /></td><td>KUNDALA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_KUSHALGARH60.png" /></td><td>KUSHALGARH</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_LEKDI61.png" /></td><td>LEKDI</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_LOJKANPURA62.png" /></td><td>LOJKANPURA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_MADHOGARH63.png" /></td><td>MADHOGARH</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_MANABAS64.png" /></td><td>MANABAS</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_MENDKI65.png" /></td><td>MENDKI</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_NALDESHWAR66.png" /></td><td>NALDESHWAR</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_NANDOLI67.png" /></td><td>NANDOLI</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_NANDU68.png" /></td><td>NANDU</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_NANGALEDI69.png" /></td><td>NANGALEDI</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_NARAYANIMATA70.png" /></td><td>NARAYANIMATA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_NATHUSAR71.png" /></td><td>NATHUSAR</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_NETALA72.png" /></td><td>NETALA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_NIDANI73.png" /></td><td>NIDANI</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_PANDUPOL74.png" /></td><td>PANDUPOL</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_PANIDAL75.png" /></td><td>PANIDAL</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_PENTPUR76.png" /></td><td>PENTPUR</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_PRADHANAKAGUWARA77.png" /></td><td>PRADHANA KA GUWARA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_PRATAPBAND78.png" /></td><td>PRATAP BAND</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_PRITHVIPURA79.png" /></td><td>PRITHVIPURA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_RAIKA80.png" /></td><td>RAIKA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_RAJOR81.png" /></td><td>RAJOR</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_RAMPURI82.png" /></td><td>RAMPUR- I</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_RAMPURII83.png" /></td><td>RAMPUR- II</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_RAMPURIII84.png" /></td><td>RAMPUR- III</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_RAYAWALA85.png" /></td><td>RAYAWALA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_REKAMALA86.png" /></td><td>REKAMALA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_RICHUNDA87.png" /></td><td>RICHUNDA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_ROTKYALA88.png" /></td><td>ROTKYALA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_SADAR89.png" /></td><td>SADAR</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_SAMRA90.png" /></td><td>SAMRA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_SHYANKOTRA91.png" /></td><td>SHYANKOTRA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_SILIBAWARI92.png" /></td><td>SILIBAWARI</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_SIRAWAS93.png" /></td><td>SIRAWAS</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_SLOPKA94.png" /></td><td>SLOPKA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_SUKOLA95.png" /></td><td>SUKOLA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_TALAB96.png" /></td><td>TALAB</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_TALVRIKSH97.png" /></td><td>TALVRIKSH</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_TARUNDA98.png" /></td><td>TARUNDA</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_TILWARI99.png" /></td><td>TILWARI</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_UMRAN100.png" /></td><td>UMRAN</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_UMRI101.png" /></td><td>UMRI</td></tr><tr><td style="text-align: center;"><img src="legend/Beat_STR_Core_Buffer_1_102.png" /></td><td></td></tr></table>', layer: layer_Beat_STR_Core_Buffer_1},
+            {label: 'STR<br /><table><tr><td style="text-align: center;"><img src="legend/STR_0_STRCTH0.png" /></td><td>STR CTH</td></tr><tr><td style="text-align: center;"><img src="legend/STR_0_STRBuffer1.png" /></td><td>STR_Buffer</td></tr><tr><td style="text-align: center;"><img src="legend/STR_0_2.png" /></td><td></td></tr></table>', layer: layer_STR_0},]
+        var lay = L.control.layers.tree(null, overlaysTree,{
+            //namedToggle: true,
+            //selectorBack: false,
+            //closedSymbol: '&#8862; &#x1f5c0;',
+            //openedSymbol: '&#8863; &#x1f5c1;',
+            //collapseAll: 'Collapse all',
+            //expandAll: 'Expand all',
+            collapsed: true,
+        });
+        lay.addTo(map);
+        setBounds();
+        </script>
     </body>
 </html>
